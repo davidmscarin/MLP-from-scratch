@@ -73,28 +73,47 @@ class MLP():
     def get_accuracy(self, predictions, Y): #compare predictions with true labels
         return np.sum(predictions == Y) / Y.size
 
-    def gradient_descent(self, X, Y, alpha, iterations):
+    def gradient_descent(self, X_train, Y_train, X_val, Y_val, alpha, iterations):
         self.iter_arr = np.arange(iterations)
         self.accuracies = []
+        self.val_accuracies = []
         for i in range(iterations): #for n iterations update parameters
-            Z1, A1, Z2, A2, Z3, A3 = self.forward_pass(X)
-            dW1, db1, dW2, db2, dW3, db3 = self.backward_prop(Z1, A1, Z2, A2, Z3, A3, X, Y)
+            Z1, A1, Z2, A2, Z3, A3 = self.forward_pass(X_train)
+            dW1, db1, dW2, db2, dW3, db3 = self.backward_prop(Z1, A1, Z2, A2, Z3, A3, X_train, Y_train)
             self.update_params(dW1, db1, dW2, db2, dW3, db3, alpha)
+            
             predictions = self.get_predictions(A3)
-            acc = self.get_accuracy(predictions, Y)
+            acc = self.get_accuracy(predictions, Y_train)
             self.accuracies.append(acc)
-            if i % 500 == 0:
-                print(predictions, Y)
-                print(acc)
+
+            val_predictions = self.make_predictions(X_val)
+            val_acc = self.get_accuracy(val_predictions, Y_val)
+            self.val_accuracies.append(val_acc)
+
+            if i % 1000 == 0:
+                print("Iteration no. ", i)
+                print("Train acc: ", acc)
+                print("Val acc: ", val_acc)
     
-    def train(self, X, Y, alpha, iterations): #call gradient descent func
-        self.gradient_descent(X, Y, alpha, iterations)
+    def train(self, X_train, y_train, X_val, y_val, alpha, iterations): #call gradient descent func
+        self.gradient_descent(X_train, y_train, X_val, y_val, alpha, iterations)
     
     def learning_curve(self): #plot accuracy over iterations
-        plt.plot(self.iter_arr, self.accuracies)
+        plt.plot(self.iter_arr, self.accuracies, label = 'training accuracy')
+        plt.plot(self.iter_arr, self.val_accuracies, label = 'validation accuracy')
+        plt.xlabel('iterations')
+        plt.ylabel('accuracy')
+
+        plt.show
     
     def make_predictions(self, X): #make predictions for new input data
         _, _, _, _, _, A3 = self.forward_pass(X)
         predictions = self.get_predictions(A3)
         return predictions
+    
+    def test(self, X_test, y_test):
+        predictions = self.make_predictions(X_test)
+        test_acc = self.get_accuracy(predictions, y_test)
+        print("Test Accuracy: ", test_acc)
+        
 
