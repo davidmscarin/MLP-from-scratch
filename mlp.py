@@ -10,13 +10,13 @@ class MLP():
         self.W3 = np.random.rand(24, 24) -0.5
         self.b3 = np.random.rand(24, 1) -0.5
     
-    def get_params(self):
+    def get_params(self): #returns weights and biases
         return self.W1, self.b1, self.W2, self.b2, self.W3, self.b3
 
     def ReLU(self, x): #standard relu function
         return np.maximum(0, x)
     
-    def deriv_ReLU(self, Z):
+    def deriv_ReLU(self, Z): #derivative of the relu function
         return Z > 0
     
     def softmax(self, Z): #standard softmax function
@@ -30,7 +30,7 @@ class MLP():
         return one_hot_Y
 
 
-    def forward_pass(self, X):
+    def forward_pass(self, X): #forward pass through the neural net
 
         Z1 = self.W1.dot(X) + self.b1 #dot product with weights matrix
         A1 = self.ReLU(Z1) #activation function
@@ -41,7 +41,7 @@ class MLP():
 
         return Z1, A1, Z2, A2, Z3, A3
 
-    def backward_prop(self, Z1, A1, Z2, A2, Z3, A3, X, Y):
+    def backward_prop(self, Z1, A1, Z2, A2, Z3, A3, X, Y): #compute gradients
         m = Y.size
         one_hot_Y = self.one_hot(Y) #one hot encode labels
 
@@ -59,7 +59,7 @@ class MLP():
 
         return dW1, db1, dW2, db2, dW3, db3
     
-    def update_params(self, dW1, db1, dW2, db2, dW3, db3, alpha):
+    def update_params(self, dW1, db1, dW2, db2, dW3, db3, alpha): #update parameters through gradient descent
         self.W1 = self.W1 - alpha * dW1
         self.b1 = self.b1 - alpha * db1    
         self.W2 = self.W2 - alpha * dW2  
@@ -67,16 +67,16 @@ class MLP():
         self.W3 = self.W3 - alpha * dW3  
         self.b3 = self.b3 - alpha * db3    
     
-    def get_predictions(self, A3):
+    def get_predictions(self, A3): #select index of max value after softmax
         return np.argmax(A3, 0)
 
-    def get_accuracy(self, predictions, Y):
+    def get_accuracy(self, predictions, Y): #compare predictions with true labels
         return np.sum(predictions == Y) / Y.size
 
     def gradient_descent(self, X, Y, alpha, iterations):
         self.iter_arr = np.arange(iterations)
         self.accuracies = []
-        for i in range(iterations):
+        for i in range(iterations): #for n iterations update parameters
             Z1, A1, Z2, A2, Z3, A3 = self.forward_pass(X)
             dW1, db1, dW2, db2, dW3, db3 = self.backward_prop(Z1, A1, Z2, A2, Z3, A3, X, Y)
             self.update_params(dW1, db1, dW2, db2, dW3, db3, alpha)
@@ -87,13 +87,13 @@ class MLP():
                 print(predictions, Y)
                 print(acc)
     
-    def train(self, X, Y, alpha, iterations):
+    def train(self, X, Y, alpha, iterations): #call gradient descent func
         self.gradient_descent(X, Y, alpha, iterations)
     
-    def learning_curve(self):
+    def learning_curve(self): #plot accuracy over iterations
         plt.plot(self.iter_arr, self.accuracies)
     
-    def make_predictions(self, X):
+    def make_predictions(self, X): #make predictions for new input data
         _, _, _, _, _, A3 = self.forward_pass(X)
         predictions = self.get_predictions(A3)
         return predictions
